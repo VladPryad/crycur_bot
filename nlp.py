@@ -1,9 +1,9 @@
 from google.cloud import speech
 import os
-import config
 import requests
-import io
+import config
 from query_builder import queryBuilder
+import audio_metadata
 
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config.GOOGLE_APPLICATION_CREDENTIALS
 
@@ -13,19 +13,20 @@ def nlp(file):
 
     r = requests.get(url, allow_redirects=True)
 
-    id = file['file_unique_id']
-    path = f'{id}.ogg'
+    id = file['file_unique_id'];
+    path = f"{id}.ogg";
+
+    open(path, 'wb').write(r.content);
+    tag = audio_metadata.load(path);
+    os.remove(path)
 
     client = speech.SpeechClient()
 
-    gcs_uri = "gs://cloud-samples-data/speech/brooklyn_bridge.raw"
-
-    #audio = speech.RecognitionAudio(uri=gcs_uri)
     audio = speech.RecognitionAudio(content = r.content)
 
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.OGG_OPUS,
-        sample_rate_hertz=48000,
+        sample_rate_hertz=tag.streaminfo['source_sample_rate'],
         language_code="ru-RU",
     )
 
@@ -33,12 +34,12 @@ def nlp(file):
     isEmpty = response.results == []
 
     if(isEmpty):
-        return "Ничего не слышу"
+        return "Can`t hear you"
 
     text = response.results[0].alternatives[0].transcript
     confidence = response.results[0].alternatives[0].confidence
 
-    if(confidence < 0.7):
-        return "Чего-чего?"
+    if(confidence < 0.5):
+        return "What?"
 
     return queryBuilder(text)
