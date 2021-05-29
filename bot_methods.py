@@ -17,14 +17,13 @@ def help(update, context):
 def echo(update, context):
     result = queryBuilder(update.message.text)
 
-    update.message.reply_text(result)
+    update.message.reply_text(result, parse_mode='MarkdownV2')
 
 def voice(update, context):
     bot = context.bot;
     file = bot.getFile(update.message.voice.file_id)
-    update.message.reply_text("Processing")
     result = nlp(file)
-    update.message.reply_text(result)
+    update.message.reply_text(result, parse_mode='MarkdownV2')
 
 
 def error(update, context):

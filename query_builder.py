@@ -1,2 +1,10 @@
+from splitter import split
+from query import query
+
 def queryBuilder(text):
-    return text + ",но мы с Настей думаем, что пора по пельменям"
+    params = split(text)
+    if(params['pair'] == ""):
+        return "No known coins, say again"
+    response = query(params)
+
+    return response
